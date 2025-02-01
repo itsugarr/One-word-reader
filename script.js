@@ -88,7 +88,7 @@ saveButton.addEventListener("click", () => {
   const blob = new Blob([fileContent], { type: "text/plain" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "saved_text.txt";
+  link.download = "One_word_progress.txt";
   link.click();
 });
 
