@@ -48,6 +48,13 @@ function extractSavedLocation(fileContent) {
   updateDisplay();  // Update the display after processing the file
 }
 
+function updateProgressBar() {
+  const progress = (currentIndex / words.length) * 100;
+  console.log('Progress:', progress);  // Log the progress value to check
+  progressBar.style.width = `${progress}%`;
+  progressText.textContent = `${Math.round(progress)}%`;
+}
+
 fileInput.addEventListener("change", (event) => {
   const file = event.target.files[0];
   if (file && file.type === "text/plain") {
@@ -115,8 +122,8 @@ function nextWord() {
     isPlaying = false;
     return;
   }
-  updateDisplay();
-  updateProgressBar();
+  updateDisplay();   // Ensure the display is updated
+  updateProgressBar();   // Update the progress bar
   const delay = getPauseDuration(words[currentIndex]);
   currentIndex++;
   clearTimeout(intervalId);
