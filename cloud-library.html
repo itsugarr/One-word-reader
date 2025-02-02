@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library</title>
+</head>
+<body>
+    <h2>Select a File</h2>
+    <ul id="fileList"></ul>
+
+    <script>
+        const repoURL = "https://itsugarr.github.io/my-library/";  // Change to your actual GitHub Pages URL
+
+        async function fetchFileList() {
+            const fileList = document.getElementById("fileList");
+
+            // Manually list your files if GitHub API restrictions prevent auto-fetching
+            const files = ["example1.txt", "example2.txt", "example3.txt"];
+
+            files.forEach(file => {
+                const li = document.createElement("li");
+                const link = document.createElement("a");
+                link.href = repoURL + file;
+                link.textContent = file;
+                link.onclick = function(event) {
+                    event.preventDefault();
+                    loadFile(repoURL + file);
+                };
+                li.appendChild(link);
+                fileList.appendChild(li);
+            });
+        }
+
+        async function loadFile(url) {
+            const response = await fetch(url);
+            const content = await response.text();
+            localStorage.setItem("selectedFileData", content);
+            window.location.href = "index.html";  // Redirect back to main page
+        }
+
+        fetchFileList();
+    </script>
+</body>
+</html>
