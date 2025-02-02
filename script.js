@@ -9,8 +9,7 @@ const displayCanvas = document.getElementById("displayCanvas");
 const textInput = document.getElementById("textInput");
 const intervalTime = document.getElementById("intervalTime");
 const startButton = document.getElementById("startButton");
-const pauseButton = document.getElementById("pauseButton");
-const resumeButton = document.getElementById("resumeButton");
+const playPauseButton = document.getElementById('playPauseButton');
 const reverseButton = document.getElementById("reverseButton");
 const skipButton = document.getElementById("skipButton");
 const fullscreenButton = document.getElementById("fullscreenButton");
@@ -24,9 +23,13 @@ const jumpButton = document.getElementById("jumpButton");
 const fullstopPause = document.getElementById("fullstopPause");
 const wordLengthPauseCheckbox = document.getElementById("wordLengthPauseCheckbox");
 const importButton = document.getElementById("importButton");
+const libraryButton = document.getElementById("libraryButton");
 const fileInput = document.getElementById("fileInput");
 const saveButton = document.getElementById("saveButton"); // New Save Button
 const authur = document.getElementById("authur"); // Assuming you have an 'author' element
+const displayArea = document.getElementById('displayArea');
+const fontSelect = document.getElementById('fontSelect');
+const colorPicker = document.getElementById('colorPicker');
 
 importButton.addEventListener("click", () => {
   fileInput.click();  // Trigger the hidden file input
@@ -67,6 +70,24 @@ fileInput.addEventListener("change", (event) => {
     reader.readAsText(file);
   } else {
     alert("Please upload a valid .txt file.");
+  }
+});
+
+document.getElementById("libraryButton").addEventListener("click", function() {
+  window.location.href = "cloud-library.html";  // Navigate to the library page
+});
+
+function returnSelectedFile(content) {
+  localStorage.setItem("selectedFileData", content);  // Store file data temporarily
+  window.location.href = "index.html";  // Redirect back to main page
+}
+
+window.addEventListener("load", function() {
+  const fileData = localStorage.getItem("selectedFileData");
+  if (fileData) {
+    textInput.value = fileData;
+    extractSavedLocation(fileData);
+    localStorage.removeItem("selectedFileData"); // Remove after loading
   }
 });
 
@@ -111,7 +132,7 @@ function getPauseDuration(word) {
 
   const displayedWordLength = getDisplayedWordLength();
   if (wordLengthPauseCheckbox.checked && displayedWordLength > 6) {
-    extraPause += baseTime * (Math.log(displayedWordLength/3));
+    extraPause += baseTime/20 * Math.pow(Math.abs(displayedWordLength - 6), 1.5);
   }
 
   return baseTime + extraPause;
@@ -137,36 +158,27 @@ function startDisplay() {
     return;
   }
 
-  // Extract the text from the textarea and split it by lines
   const text = textInput.value.trim();
-  
-  // Search for the 'currentsavedlocation' line and remove it
+
   const lines = text.split(/\r?\n/);
   const locationLine = lines.findIndex(line => line.includes('currentsavedlocation ='));
 
-  // If the location line exists, extract the saved location and remove that line
   if (locationLine !== -1) {
     const locationMatch = lines[locationLine].match(/currentsavedlocation = (\d+);/);
     if (locationMatch) {
-      savedLocation = parseInt(locationMatch[1], 10);  // Set the saved location
+      savedLocation = parseInt(locationMatch[1], 10);
     }
-    lines.splice(locationLine, 1); // Remove the line containing 'currentsavedlocation'
+    lines.splice(locationLine, 1);
   }
 
-  // After removing the saved location line, split the remaining content into words
   words = lines.join(' ').trim().split(/\s+/);
-
-  // If no words were found after splitting, return early
   if (words.length === 0) return;
 
-  // Start from the saved location (or 0 if no location is found)
   currentIndex = 0;
   isPlaying = true;
-
-  // Start displaying the text
+  playPauseButton.textContent = 'Pause'; // Ensure correct button text
   nextWord();
 
-  // Change the button text to "Start Over"
   startButton.textContent = "Start Over";
 }
 
@@ -183,14 +195,17 @@ function resetProgress() {
 function pauseDisplay() {
   clearTimeout(intervalId);
   isPlaying = false;
+  playPauseButton.textContent = 'Play'; // Ensure button syncs to 'Play'
 }
 
 function resumeDisplay() {
   if (!isPlaying && currentIndex < words.length) {
     isPlaying = true;
     nextWord();
+    playPauseButton.textContent = 'Pause'; // Ensure button syncs to 'Pause'
   }
 }
+
 
 function reverseWord() {
   pauseDisplay();
@@ -212,12 +227,16 @@ function enterFullscreen() {
     fullscreenButton.style.display = "none";
     jumpButton.style.display = "none";
     exitFullscreenButton.style.display = "inline-block";
-    importButton.style.display = "none";  // Hide import button
-    saveButton.style.display = "none";    // Hide save button
-    authur.style.display = "none";        // Hide author element
+    importButton.style.display = "none";  
+    libraryButton.style.display = "none";
+    saveButton.style.display = "none";    
+    authur.style.display = "none";        
+    colorPicker.style.display = "none";  // Hide color picker
+    fontSelect.style.display = "none";   // Hide font selector
     pauseDisplay();
   });
 }
+
 
 function exitFullscreen() {
   document.exitFullscreen().then(() => {
@@ -225,16 +244,29 @@ function exitFullscreen() {
     fullscreenButton.style.display = "inline-block";
     exitFullscreenButton.style.display = "none";
     jumpButton.style.display = "inline-block";
-    restoreLayout(); // Restore the layout of elements after exiting fullscreen
+    restoreLayout(); 
     pauseDisplay();
   });
 }
 
+
+colorPicker.addEventListener("input", function() {
+  displayCanvas.style.color = this.value;
+});
+
+fontSelect.addEventListener("change", function() {
+  displayCanvas.style.fontFamily = this.value;
+});
+
 function restoreLayout() {
-  importButton.style.display = "inline-block";  // Ensure import button is shown
-  saveButton.style.display = "inline-block";    // Ensure save button is shown
-  authur.style.display = "inline-block";        // Ensure author element is shown
+  importButton.style.display = "inline-block";  
+  libraryButton.style.display = "inline-block";
+  saveButton.style.display = "inline-block";    
+  authur.style.display = "inline-block";        
+  colorPicker.style.display = "inline-block";   // Show color picker again
+  fontSelect.style.display = "inline-block";    // Show font selector again
 }
+
 
 document.addEventListener("fullscreenchange", () => {
   if (!document.fullscreenElement) {
@@ -250,35 +282,32 @@ document.addEventListener("fullscreenchange", () => {
 
 document.addEventListener('keydown', (event) => {
   switch (event.key) {
-      case ' ':
-          event.preventDefault();
-          if (isPlaying) {
-              pauseDisplay();
-          } else {
-              resumeDisplay();
-          }
-          break;
-      case 'ArrowRight':
-          skipWord();
-          break;
-      case 'ArrowLeft':
-          reverseWord();
-          break;
-      case 'ArrowUp':
-          adjustSpeed(true);
-          break;
-      case 'ArrowDown':
-          adjustSpeed(false);
-          break;
-      case 'f':
-          if (!document.fullscreenElement) {
-              enterFullscreen();
-          } else {
-              exitFullscreen();
-          }
-          break;
+    case ' ':
+      event.preventDefault();
+      playPauseButton.click(); // Trigger button click for play/pause
+      break;
+    case 'ArrowRight':
+      skipWord();
+      break;
+    case 'ArrowLeft':
+      reverseWord();
+      break;
+    case 'ArrowUp':
+      adjustSpeed(true);
+      break;
+    case 'ArrowDown':
+      adjustSpeed(false);
+      break;
+    case 'f':
+      if (!document.fullscreenElement) {
+        enterFullscreen();
+      } else {
+        exitFullscreen();
+      }
+      break;
   }
 });
+
 
 
 fullscreenButton.addEventListener("click", enterFullscreen);
@@ -293,7 +322,15 @@ jumpButton.addEventListener("click", () => {
   updateProgressBar();
 });
 
-pauseButton.addEventListener("click", pauseDisplay);
-resumeButton.addEventListener("click", resumeDisplay);
+playPauseButton.addEventListener('click', () => {
+  if (isPlaying) {
+    pauseDisplay();
+  } else {
+    resumeDisplay();
+  }
+});
+
+
+
 reverseButton.addEventListener("click", reverseWord);
 skipButton.addEventListener("click", skipWord);
