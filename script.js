@@ -106,14 +106,16 @@ function updateDisplay() {
 }
 
 saveButton.addEventListener("click", () => {
+  const fileName = prompt("Enter file name:", "saved_text.txt");
+  if (!fileName) return; // Cancel if user presses Cancel or enters nothing
+
   const fileContent = `currentsavedlocation = ${currentIndex};\n` + words.join("\n");
   const blob = new Blob([fileContent], { type: "text/plain" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "saved_text.txt";
+  link.download = fileName.endsWith(".txt") ? fileName : fileName + ".txt"; // Ensure .txt extension
   link.click();
 });
-
 function updateProgressBar() {
   const progress = (currentIndex / words.length) * 100;
   progressBar.style.width = `${progress}%`;
