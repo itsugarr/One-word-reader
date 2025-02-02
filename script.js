@@ -32,6 +32,7 @@ importButton.addEventListener("click", () => {
   fileInput.click();  // Trigger the hidden file input
 });
 
+
 function extractSavedLocation(fileContent) {
   const savedLocationMatch = fileContent.match(/currentsavedlocation = (\d+);/);
   if (savedLocationMatch) {
@@ -88,7 +89,7 @@ saveButton.addEventListener("click", () => {
   const blob = new Blob([fileContent], { type: "text/plain" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "One_word_progress.txt";
+  link.download = "saved_text.txt";
   link.click();
 });
 
@@ -237,9 +238,13 @@ function restoreLayout() {
 
 document.addEventListener("fullscreenchange", () => {
   if (!document.fullscreenElement) {
-    restoreLayout(); // Ensure correct layout when exiting fullscreen
-  } else {
-    pauseDisplay();  // Pause if entering fullscreen
+    // This means fullscreen has been exited (e.g., via Esc key)
+    container.classList.remove("fullscreen");
+    fullscreenButton.style.display = "inline-block";
+    exitFullscreenButton.style.display = "none";
+    jumpButton.style.display = "inline-block";
+    restoreLayout(); // Restore layout for import, save buttons, and author
+    pauseDisplay();  // Optionally pause the display when exiting fullscreen
   }
 });
 
