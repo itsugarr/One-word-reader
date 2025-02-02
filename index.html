@@ -66,9 +66,14 @@
       background-color: #555;
     }
     #importButton {
-      margin-left: 0; /* Aligns the button to the left */
-      display: block; /* Ensures it stays on its own line */
+      margin-left: 0; /* Aligns the button to the left */ 
+      margin-bottom: 20px;
     }
+    #libraryButton {
+      margin-left: 0; /* Aligns the button to the left */
+      margin-bottom: 20px;
+    }
+
     input, textarea {
       width: 100%;
       padding: 8px;
@@ -83,14 +88,6 @@
     position: relative;
 }
 
-#progressBar {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    width: 100%;
-    height: 10px;
-    background-color: lightgray;
-}
 
 .container.fullscreen #progressBar {
     position: fixed; /* Fixed positioning ensures it stays visible in fullscreen */
@@ -100,31 +97,35 @@
     z-index: 9999;  /* Make sure it's above other content */
 }
 
-    #progressContainer {
-      width: 100%;
-      margin-top: 10px;
-      position: relative;
-    }
+#progressContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
 
-    #progressText {
-      font-size: 14px;
-      color: white;
-      text-align: center;
-      margin-bottom: 5px;
-    }
+#progressText {
+  font-size: 14px;
+  color: white;
+  margin-right: 10px;
+  white-space: nowrap;
+}
 
-    #progressBarContainer {
-      width: 100%;
-      background-color: #333;
-      border-radius: 5px;
-      overflow: hidden;
-    }
+#progressBarContainer {
+  flex-grow: 1;
+  background-color: #333;
+  border-radius: 5px;
+  overflow: hidden;
+  height: 10px;
+  margin-left: 10px;
+}
 
-    #progressBar {
-      height: 10px;
-      background-color: #00ff00;
-      width: 0%;
-    }
+#progressBar {
+  height: 100%;
+  background-color: #00ff00;
+  width: 0%;
+}
+
     /* Fullscreen Mode */
     .fullscreen {
       display: flex;
@@ -166,7 +167,24 @@
       white-space: nowrap; /* Ensures label stays in one line */
       font-size: 16px;
     }
+    #customizeSection {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0;
+  }
 
+  #colorPicker {
+            width: 50px;
+            height: 30px;
+            padding: 0;
+        }
+        select, input[type="color"] {
+            margin: 5px;
+            padding: 5px;
+            font-size: 1em;
+        }
     .hidden-file-input {
       display: none;
     }
@@ -225,6 +243,7 @@
     <h1 id="authur">by Pann</h1>
     <textarea id="textInput" rows="5" placeholder="Enter your text here..."></textarea>
     <div>
+      <button id="libraryButton">Library</button>
       <button id="importButton">Import</button>
     </div>
     <div></div>
@@ -237,8 +256,7 @@
     
     <div class="button-group">
       <button id="startButton">Start</button>
-      <button id="pauseButton">Pause</button>
-      <button id="resumeButton">Play</button>
+      <button id="playPauseButton">Play</button>
       <button id="reverseButton">Backward</button>
       <button id="skipButton">Forward</button>
       <button id="fullscreenButton">Full Screen</button>
@@ -257,6 +275,23 @@
     </div>
 
     <div id="displayCanvas"></div>
+    <div>
+      <label>Customize:</label>
+    </div>
+    <div id="customizeSection">
+      <label for="colorPicker">Font Color:</label>
+      <input type="color" id="colorPicker" title="Font Color Picker" value="#FFFFFF">
+      <label for="fontSelect">Font:</label>
+      <select id="fontSelect" title="Font Selection">
+          <option value="Arial">Arial</option>
+          <option value="Verdana">Verdana</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Courier New">Courier New</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Trebuchet MS">Trebuchet MS</option>
+          <option value="Comic Sans MS">Comic Sans MS</option>
+      </select>
+    </div>
     <div class="label">
       <label for="jumpTo">Jump to (%):</label>
       <input id="jumpTo" type="number" min="0" max="100" value="0">
