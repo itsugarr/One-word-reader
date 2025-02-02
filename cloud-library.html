@@ -5,41 +5,182 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library</title>
 </head>
+<style>
+    body {
+        background-color: black;
+        color: white;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+    }
+    .folder-button, .load-btn, #backButton, #homeButton {
+        background-color: #222;
+        color: white;
+        border: 1px solid #444;
+        padding: 10px;
+        margin: 5px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .folder-button:hover, .load-btn:hover, #backButton:hover, #homeButton:hover {
+        background-color: #444;
+    }
+    .file-list {
+        background-color: #111;
+        padding: 10px;
+        border-radius: 5px;
+        list-style: none;
+    }
+    #backButton {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+    }
+    #homeButton {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+    }
+    #file-container {
+        display: none;
+    }
+    #searchContainer {
+        margin-bottom: 20px;
+    }
+    #searchInput {
+        padding: 10px;
+        width: 50%;
+        border-radius: 5px;
+        border: 1px solid #444;
+    }
+    .file-entry {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px 0;
+    }
+</style>
 <body>
-    <h2>Select a File</h2>
-    <ul id="fileList"></ul>
+    <h2>Library</h2>
+
+    <div id="searchContainer">
+        <input type="text" id="searchInput" placeholder="Search book, authur, or book code..." oninput="filterFiles()">
+    </div>
+
+    <div id="folder-container">
+        <button id="englishBooksFolder" class="folder-button">English Books</button>
+        <button id="homeButton" class="folder-button">Back to Home</button>
+    </div>
+
+    <div id="file-container">
+        <h2 id="currentFolderTitle"></h2>
+        <ul id="fileList" class="file-list"></ul>
+        <button id="backButton">Back</button>
+    </div>
 
     <script>
-        const repoURL = "https://itsugarr.github.io/my-library/";  // Change to your actual GitHub Pages URL
+        const repoURL = "https://itsugarr.github.io/my-library/";
+        const libraryStructure = {
+            "English Books": {
+                "English Books": [
+                        { name: "example3.txt", description: "Sample text file for demonstration purposes." }
+                    ],
+                "KVIS Books": {
+                    "Masterpieces": [
+                        { name: "Kokoro - Natsume Soseki.txt", description: "TR0291" }
+                    ],
+                    "English Books": [
+                        { name: "International Relations: A Very Short Introduction - Paul Wilkinson.txt", description: "TB0841" },
+                    ]
+                }
+            }
+        };
 
-        async function fetchFileList() {
+        let currentFolder = null;
+        let folderStack = [];
+
+        document.getElementById("englishBooksFolder").addEventListener("click", () => {
+            navigateToFolder("English Books", libraryStructure["English Books"]);
+        });
+
+        document.getElementById("homeButton").addEventListener("click", () => {
+            window.location.href = "index.html";
+        });
+
+        document.getElementById("backButton").addEventListener("click", () => {
+            if (folderStack.length > 0) {
+                const parentFolder = folderStack.pop();
+                navigateToFolder(parentFolder.name, parentFolder.contents);
+            } else {
+                document.getElementById("folder-container").style.display = "block";
+                document.getElementById("file-container").style.display = "none";
+            }
+        });
+
+        function navigateToFolder(folderName, contents) {
+            document.getElementById("folder-container").style.display = "none";
+            document.getElementById("file-container").style.display = "block";
+            document.getElementById("currentFolderTitle").textContent = folderName;
+
+            currentFolder = contents;
+            updateFileList(contents);
+        }
+
+        function updateFileList(contents) {
             const fileList = document.getElementById("fileList");
+            fileList.innerHTML = "";
 
-            // Manually list your files if GitHub API restrictions prevent auto-fetching
-            const files = ["example1.txt", "example2.txt", "example3.txt"];
+            if (typeof contents === "object" && !Array.isArray(contents)) {
+                // Folder level
+                for (const [folderName, folderContents] of Object.entries(contents)) {
+                    const li = document.createElement("li");
+                    const folderButton = document.createElement("button");
+                    folderButton.textContent = folderName;
+                    folderButton.classList.add("folder-button");
+                    folderButton.onclick = () => {
+                        folderStack.push({ name: document.getElementById("currentFolderTitle").textContent, contents: currentFolder });
+                        navigateToFolder(folderName, folderContents);
+                    };
+                    li.appendChild(folderButton);
+                    fileList.appendChild(li);
+                }
+            } else {
+                // File level
+                contents.forEach(file => {
+                    const li = document.createElement("li");
+                    const fileEntry = document.createElement("div");
+                    fileEntry.classList.add("file-entry");
+                    fileEntry.textContent = `${file.name} - ${file.description}`;
 
-            files.forEach(file => {
-                const li = document.createElement("li");
-                const link = document.createElement("a");
-                link.href = repoURL + file;
-                link.textContent = file;
-                link.onclick = function(event) {
-                    event.preventDefault();
-                    loadFile(repoURL + file);
-                };
-                li.appendChild(link);
-                fileList.appendChild(li);
-            });
+                    const loadButton = document.createElement("button");
+                    loadButton.textContent = "Load";
+                    loadButton.classList.add("load-btn");
+                    loadButton.onclick = () => loadFile(repoURL + file.name);
+
+                    fileEntry.appendChild(loadButton);
+                    li.appendChild(fileEntry);
+                    fileList.appendChild(li);
+                });
+            }
         }
 
         async function loadFile(url) {
             const response = await fetch(url);
             const content = await response.text();
             localStorage.setItem("selectedFileData", content);
-            window.location.href = "index.html";  // Redirect back to main page
+            window.location.href = "index.html";
         }
 
-        fetchFileList();
+        function filterFiles() {
+            const searchInput = document.getElementById("searchInput").value.toLowerCase();
+            const fileListItems = document.querySelectorAll("#fileList li");
+
+            fileListItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchInput) ? "" : "none";
+            });
+        }
     </script>
 </body>
 </html>
